@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+    Trigger that can subscribe to and receive notifications from <a href="https://www.w3.org/TR/websub/">WebSub</a> endpoints.
+</div>

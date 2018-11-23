@@ -1,0 +1,17 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:description>
+        <div>
+            <p>
+                Is triggered by HTTP requests to <b>http://JENKINS_URL/generic-webhook-trigger/invoke</b>
+            </p>
+        </div>
+    </f:description>
+
+    <f:entry title="Subscriptions" field="subscriptions">
+        <f:repeatableProperty field="subscriptions"  minimum="0" />
+        <f:description>
+            Subscriptions that would trigger this job.
+        </f:description>
+    </f:entry>
+</j:jelly>
