@@ -26,12 +26,12 @@ public class WebSubSubscriptionRegistry {
     }
     private final IndexedCollection<WebSubSubscription> subscriptions = new ConcurrentIndexedCollection<>();
 
-    WebSubSubscriptionRegistry() {
+    public WebSubSubscriptionRegistry() {
         subscriptions.addIndex(UniqueIndex.onAttribute(SubscriptionAttributes.ID));
         subscriptions.addIndex(NavigableIndex.onAttribute(SubscriptionAttributes.EXPIRATION));
     }
 
-    Optional<WebSubSubscription> getById(final String id) {
+    public Optional<WebSubSubscription> getById(final String id) {
         val query = equal(SubscriptionAttributes.ID, id);
         val results = subscriptions.retrieve(query);
         if (results.isEmpty())
@@ -39,7 +39,7 @@ public class WebSubSubscriptionRegistry {
         return Optional.of(results.iterator().next());
     }
 
-    List<WebSubSubscription> getExpiresBefore(Instant t) {
+    public List<WebSubSubscription> getExpiresBefore(Instant t) {
         val query = lessThan(SubscriptionAttributes.EXPIRATION, t);
         val results = subscriptions.retrieve(query);
         return results.stream().collect(Collectors.toList());

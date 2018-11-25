@@ -14,8 +14,8 @@ public class WebSubSubscription {
     private final String topicUrl;
     private final Instant expiration;
 
-    @Nullable
-    private final String secret;
+    //@Nullable
+    //private final String secret;
 
     private State state = State.ACTIVE;
 

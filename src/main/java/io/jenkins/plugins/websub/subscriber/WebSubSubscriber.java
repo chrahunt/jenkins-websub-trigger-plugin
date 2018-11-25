@@ -9,9 +9,8 @@ import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.UrlEncodedContent;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import lombok.Data;
+import lombok.NonNull;
 import lombok.val;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
@@ -60,6 +59,8 @@ import static io.jenkins.plugins.websub.WebSubUtils.getHttpResponseBody;
  *
  * Not thread-safe.
  *
+ * TODO: Gracefully handle base url update by doing resubscription when requests come in.
+ *
  * For Subscriber-side reconciliation, the callbackUrl must have a unique identifier
  * as part of its path.
  * WebSub: https://www.w3.org/TR/websub/
@@ -98,11 +99,11 @@ public class WebSubSubscriber {
         String hubUrl;
         String topicUrl;
         String callbackId;
-        String secret;
+        // TODO: secret
         int leaseSeconds;
         // TODO: Sent-time, so they can be cleaned up if not responded in enough time.
         WebSubSubscription toSubscription(final Instant expiration) {
-            return new WebSubSubscription(callbackId, topicUrl, expiration, secret);
+            return new WebSubSubscription(callbackId, topicUrl, expiration);
         }
     }
 
@@ -111,7 +112,7 @@ public class WebSubSubscriber {
         /**
          * Base URL to use for callbacks.
          */
-        final String baseUrl;
+        @NonNull final String baseUrl;
         /**
          * Default lease seconds to request, or 0 to not include in subscription
          * requests.
@@ -193,7 +194,7 @@ public class WebSubSubscriber {
         subscription.hubUrl = hubUrl;
         subscription.topicUrl = topicUrl;
         subscription.leaseSeconds = options.leaseSeconds;
-        subscribeImpl(hubUrl, subscription, new ArrayList<>());
+        sendImpl(subscription.hubUrl, subscription, new ArrayList<>());
     }
 
     /**
@@ -224,15 +225,14 @@ public class WebSubSubscriber {
      * @throws WebSubException
      * @throws CommunicationException
      */
-    private void subscribeImpl(
+    private void sendImpl(
             final String hubUrl, final PendingSubscription subscription,
             final List<String> urls)
                 throws IOException, WebSubException, CommunicationException {
         final HttpRequestFactory requestFactory =
                 transport.createRequestFactory();
-        val mode = Modes.SUBSCRIBE;
-        final Multimap<String, String> data = ArrayListMultimap.create();
-        data.put(HubParams.MODE, mode);
+        final Map<String, String> data = new HashMap<>();
+        data.put(HubParams.MODE, subscription.mode);
         data.put(HubParams.TOPIC, subscription.topicUrl);
         data.put(HubParams.CALLBACK, options.baseUrl + "/" + subscription.callbackId);
         if (subscription.leaseSeconds != 0)
@@ -258,7 +258,7 @@ public class WebSubSubscriber {
                 if (urls.contains(location))
                     throw new CommunicationException("Detected redirect loop");
                 urls.add(location);
-                subscribeImpl(location, subscription, urls);
+                sendImpl(location, subscription, urls);
             } else {
                 throw new CommunicationException(
                     fmt("Received status code {}", statusCode));
@@ -416,9 +416,9 @@ public class WebSubSubscriber {
         return HttpResponses.ok();
     }
 
-    static class DiscoverResponse {
-        String topicUrl;
-        List<String> hubUrls = new ArrayList<>();
+    public static class DiscoverResponse {
+        public String topicUrl;
+        public List<String> hubUrls = new ArrayList<>();
     }
 
     /**
@@ -532,6 +532,7 @@ public class WebSubSubscriber {
     }
 
     /**
+     * XXX: Not implemented.
      * Invoked on subscription request timeout.
      * @param subscription the failed subscription
      */
@@ -549,6 +550,7 @@ public class WebSubSubscriber {
     }
 
     /**
+     * XXX: Not implemented.
      * Invoked on unsubscribe request timeout.
      * @param subscription the failed un-subscription.
      */
