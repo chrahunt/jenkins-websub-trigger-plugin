@@ -11,7 +11,6 @@ import hudson.triggers.TriggerDescriptor;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 import lombok.ToString;
-import lombok.Value;
 import lombok.val;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -19,7 +18,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static io.jenkins.plugins.websub.WebSubUtils.fmt;
 import static io.jenkins.plugins.websub.WebSubUtils.cast;
 

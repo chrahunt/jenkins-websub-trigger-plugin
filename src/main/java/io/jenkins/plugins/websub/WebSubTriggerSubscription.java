@@ -5,13 +5,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
+import hudson.util.FormValidation;
 import javax.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.val;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Data object representing an individual subscription saved to a Job.
@@ -25,10 +29,23 @@ public class WebSubTriggerSubscription
         @Nonnull
         @Override
         public String getDisplayName() { return ""; }
+
+        // Used by form validator.
+        @SuppressWarnings("unused")
+        public FormValidation doCheckTopicUrl(@QueryParameter String value) {
+            final String[] validSchemes = {"http", "https"};
+            final long options = UrlValidator.ALLOW_LOCAL_URLS + UrlValidator.NO_FRAGMENTS;
+            val validator = new UrlValidator(validSchemes, options);
+            if (validator.isValid(value)) {
+                return FormValidation.ok();
+            } else {
+                return FormValidation.error("Invalid URL");
+            }
+        }
     }
 
     @Getter private final String topicUrl;
-    // Non-persisted id mapping to a subscription.
+    // Non-persisted id mapping to an actual subscription.
     @Nullable @Getter @Setter transient String id;
 
     @DataBoundConstructor

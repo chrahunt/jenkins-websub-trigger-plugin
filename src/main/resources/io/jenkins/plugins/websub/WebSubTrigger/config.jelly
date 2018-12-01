@@ -3,7 +3,7 @@
     <f:description>
         <div>
             <p>
-                Is triggered by HTTP requests to <b>http://JENKINS_URL/generic-webhook-trigger/invoke</b>
+                Manage WebSub subscriptions that will invoke your job on notification.
             </p>
         </div>
     </f:description>

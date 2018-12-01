@@ -171,6 +171,18 @@
       <!-- required for mockito + awaitility -->
       <version>2.6</version>
     </dependency>
+    <dependency>
+      <groupId>commons-validator</groupId>
+      <artifactId>commons-validator</artifactId>
+      <version>1.6</version>
+    </dependency>
+    <dependency>
+      <!-- requireUpperBoundDeps fix -->
+      <groupId>commons-digester</groupId>
+      <artifactId>commons-digester</artifactId>
+      <!-- required for commons-validator + jenkins-core -->
+      <version>2.1</version>
+    </dependency>
   </dependencies>
   <!-- Assuming you want to host on @jenkinsci:
     <url>https://wiki.jenkins.io/display/JENKINS/TODO+Plugin</url>

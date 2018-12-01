@@ -1,17 +1,20 @@
 # WebSub Trigger Plugin
 
-[WebSub](https://www.w3.org/TR/websub/) is a standard mechanism for a publish-subscribe model in the open internet.
+[WebSub](https://www.w3.org/TR/websub/) (previously PubSubHubbub or PuSH) is a standard mechanism
+for a publish-subscribe model in the open internet.
 
-This plugin implements the Subscriber interface required to allow a Job to subscribe to a Topic, exposed as a URL
-that references a WebSub Hub. The plugin subscribes to the Hub, taking care of all negotiation. When a request comes in,
-it is verified and then triggers the applicable job.
+This plugin enables triggering jobs in real-time based on content published via WebSub. The plugin
+handles negotiating and maintaining WebSub subscriptions to Topic URLs configured in individual
+jobs. When a request comes in from a WebSub Hub, the appropriate job is located and triggered.
 
-The benefit of WebSub over WebHooks is two-fold:
+# WebSub vs WebHooks
 
-1. WebSub is standardized - as more services and hub providers come online they will all conform to the same standard
-   interface, no need for proprietary plugins or custom API calls.
-2. WebSub subscriptions are self-maintaining. A WebSub subscription is issued for a configurable lease period and then
-   renewed prior to expiration (assuming Jenkins is still up). This model allows for ephemeral Jenkins without Hubs or
-   Jenkins needing to worry about periodic cleanup tasks or "forgetting" about some configuration.
-
-# Code organization
+1. WebSub is standardized - as more services and hub providers come online they will conform to
+   the same standard interface, no need for provider-specific plugins or custom API calls.
+2. WebSub subscriptions are self-maintaining. A WebSub subscription is issued for a configurable
+   lease period and must be renewed otherwise the Hub will drop it. This model allows for less
+   maintenance by WebSub clients without requiring complicated cleanups on the service provider,
+   which in turn promotes more dynamic infrastructure.
+3. A WebSub subscriber can only manage subscriptions for endpoints it has control over. As a result
+   less permission is typically required for registering via WebSub (read access vs admin access),
+   since there's no danger of removing other WebHooks.
