@@ -18,14 +18,15 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.jenkins.plugins.websub.WebSubUtils.fmt;
+import static io.jenkins.plugins.websub.utils.Generic.fmt;
 
 /**
- * Receives HTTP requests and dispatch to WebSubSubscriber if applicable.
+ * Exposes listening endpoint on Jenkins
+ * Receives HTTP requests and dispatch to WebSubSubscriber if the request path
+ * matches our plugin prefix.
  */
 @Extension
-// Used by Jenkins.
-@SuppressWarnings("unused")
+@SuppressWarnings("unused") // Used by Jenkins.
 public class WebSubRequestReceiver
         extends CrumbExclusion implements UnprotectedRootAction {
     private static final Logger logger = LoggerFactory.getLogger(WebSubRequestReceiver.class);
@@ -38,9 +39,13 @@ public class WebSubRequestReceiver
     /**
      * Stapler action method invoked when one of our callback methods is
      * requested.
+     *
+     * This may be in response to a subscription request or a routine notification.
+     *
+     * ".../callback" maps to doCallback
      */
     public HttpResponse doCallback(final StaplerRequest request) {
-        logger.info("doCallback()");
+        logger.debug("doCallback()");
         try {
             return WebSubSharedResources.getInstance().getClient().handleRequest(request);
         } catch (Exception e) {
@@ -50,9 +55,6 @@ public class WebSubRequestReceiver
         }
     }
 
-    /**
-     * Endpoint initialization.
-     */
     @Initializer(after=InitMilestone.JOB_LOADED)
     public static void init() {
         // For now we just pass our prefix along. The SharedResources handle the case where the
@@ -62,7 +64,7 @@ public class WebSubRequestReceiver
     }
 
     /**
-     * Indicate whether POST requests should be excluded from CSRF protection.
+     * Pass-thru requests applicable to our plugin, do not require CSRF token.
      */
     @Override
     public boolean process(
@@ -74,6 +76,7 @@ public class WebSubRequestReceiver
         if (path != null && path.startsWith("/" + URL_PREFIX)) {
             // We are responsible for invoking the rest of the chain.
             chain.doFilter(request, response);
+            // No CSRF token required.
             return true;
         }
         return false;
@@ -85,7 +88,11 @@ public class WebSubRequestReceiver
     @Override
     public String getDisplayName() { return null; }
 
+    /**
+     * Requests starting with the returned base path will get mapped to our object per
+     * https://stapler.kohsuke.org/reference.html.
+     * @return base URL
+     */
     @Override
     public String getUrlName() { return PLUGIN_URL_NAME; }
-
 }

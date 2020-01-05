@@ -9,24 +9,21 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Setter;
 import lombok.val;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import static io.jenkins.plugins.websub.WebSubUtils.fmt;
+import static io.jenkins.plugins.websub.utils.Generic.fmt;
 
 /**
  * Global shared resources for the plugin.
  *
  * Performs lazy initialization of resources.
  */
-class WebSubSharedResources {
-    private static Logger logger = LoggerFactory.getLogger(WebSubSharedResources.class);
-
+final class WebSubSharedResources {
     private WebSubSharedResources() {}
     private static WebSubSharedResources instance;
     public static WebSubSharedResources getInstance() {
-        if (instance == null)
+        if (instance == null) {
             instance = new WebSubSharedResources();
+        }
         return instance;
     }
 
@@ -50,19 +47,22 @@ class WebSubSharedResources {
 
     /**
      * Retrieve the subscriber client.
+     *
      * @return the client
-     * @throws Exception on invalid Jenkins URL.
+     * @throws WebSubConfigurationException if we cannot retrieve the instance configuration,
+     *   or the Jenkins URL is not set.
      */
-    WebSubSubscriber getClient() throws Exception {
+    WebSubSubscriber getClient() throws WebSubConfigurationException {
         // We may have just started up and have existing subscriptions.
         // Or we may have not started up but
         val config = JenkinsLocationConfiguration.get();
         if (config == null) {
-            throw new Exception("Jenkins configuration not available.");
+            throw new WebSubConfigurationException("Jenkins configuration not available.");
         }
+
         val baseUrl = config.getUrl();
         if (baseUrl == null) {
-            throw new Exception("Jenkins URL must be configured.");
+            throw new WebSubConfigurationException("Jenkins URL must be configured.");
         } else if (jenkinsUrl == null) {
             // TODO: Gracefully handle existing subscriptions that were loaded from
             //  disk. Might handle this at init time instead.
@@ -73,9 +73,11 @@ class WebSubSharedResources {
             jenkinsUrl = baseUrl;
             client = null;
         }
+
         if (client == null) {
             client = new WebSubTriggerSubscriber(getRegistry(), fmt("{}{}", jenkinsUrl, prefix));
         }
+
         return client;
     }
 }

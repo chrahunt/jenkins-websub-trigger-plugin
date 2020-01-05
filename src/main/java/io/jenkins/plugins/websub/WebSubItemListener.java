@@ -13,7 +13,7 @@ import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.jenkins.plugins.websub.WebSubUtils.cast;
+import static io.jenkins.plugins.websub.utils.Generic.cast;
 import static jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 import static io.jenkins.plugins.websub.subscriber.WebSubSubscriber.DiscoverResponse;
 
@@ -21,6 +21,7 @@ import static io.jenkins.plugins.websub.subscriber.WebSubSubscriber.DiscoverResp
  * Listen for changes to jobs and sends out subscribe/unsubscribe events.
  */
 @Extension
+@SuppressWarnings("unused") // Used by Jenkins.
 public class WebSubItemListener extends ItemListener {
     private final static Logger logger = LoggerFactory.getLogger(WebSubItemListener.class);
     private static ExecutorService executorService;
@@ -28,19 +29,19 @@ public class WebSubItemListener extends ItemListener {
     @Override
     public void onDeleted(final Item item) {
         logger.info("onDeleted()");
-        // Unsubscribe from the job.
+        // TODO: Unsubscribe from the job.
     }
 
     @Override
     public void onLocationChanged(final Item item, final String oldFullName, final String newFullName) {
         logger.info("onLocationChanged()");
-        // Update SharedResources.jobMap to point to the new full name.
+        // TODO: Update SharedResources.jobMap to point to the new full name.
     }
 
     @Override
     public void onCopied(final Item src, final Item item) {
         logger.info("onCopied()");
-        // If it has a Trigger added then attempt to subscribe for the new item.
+        // TODO: If it has a Trigger added then attempt to subscribe for the new item.
     }
 
     @Override
@@ -73,21 +74,23 @@ public class WebSubItemListener extends ItemListener {
                 val subs = trigger.getSubscriptions();
                 for (val sub : subs) {
                     if (sub.getId() != null) {
-                        // TODO: Allow forcing subscription.
+                        // TODO: Allow forced re-subscription.
                         logger.debug("Already subscribed to {}, skipping.", sub.getTopicUrl());
                         continue;
                     }
+
                     val client = WebSubSharedResources.getInstance().getClient();
                     logger.info("Discovering {}", sub.getTopicUrl());
                     DiscoverResponse response = client.discover(sub.getTopicUrl());
                     if (response.hubUrls.size() == 0) {
-                        logger.warn("Could not get hub URLs.");
+                        logger.warn("Could not get hub URLs for {}.", sub.getTopicUrl());
                     } else if (response.topicUrl == null) {
-                        logger.warn("Could not get topic URL.");
+                        logger.warn("Could not get topic URL for {}.", sub.getTopicUrl());
                     } else {
                         String id = client.subscribe(response.hubUrls.get(0), response.topicUrl);
                         val jobMap = WebSubSharedResources.getInstance().getJobMap();
                         logger.info("Saving id {} for job {}", id, trigger.getJob().getFullName());
+                        // Why is this commented?
                         //jobMap.put(id, trigger.getJob().getFullName());
                         sub.setId(id);
                     }

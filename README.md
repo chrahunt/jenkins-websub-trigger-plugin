@@ -18,3 +18,17 @@ jobs. When a request comes in from a WebSub Hub, the appropriate job is located 
 3. A WebSub subscriber can only manage subscriptions for endpoints it has control over. As a result
    less permission is typically required for registering via WebSub (read access vs admin access),
    since there's no danger of removing other WebHooks.
+
+# Project organization
+
+- `src/main/java` - java sources
+- `src/main/resources` - resources bundled into plugin
+- `src/main/webapp` - icon
+- `src/test` - tests
+
+## Code organization
+
+The plugin is organized into 2 main components:
+
+1. `subscriber` - Jenkins-independent WebSub subscriber implementation.
+- `io.jenkins.plugins.websub`

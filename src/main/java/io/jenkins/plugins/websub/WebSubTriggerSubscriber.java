@@ -1,29 +1,20 @@
 package io.jenkins.plugins.websub;
 
-import com.google.api.client.http.UrlEncodedParser;
-import com.google.common.collect.ImmutableMultimap;
 import io.jenkins.plugins.websub.subscriber.WebSubSubscriber;
 import io.jenkins.plugins.websub.subscriber.WebSubSubscription;
 import io.jenkins.plugins.websub.subscriber.WebSubSubscriptionRegistry;
+import io.jenkins.plugins.websub.utils.JavaxServlet;
 import jenkins.model.Jenkins;
 import lombok.Value;
 import lombok.val;
-import org.apache.commons.io.IOUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
-import static io.jenkins.plugins.websub.WebSubUtils.toStream;
 
 class WebSubTriggerSubscriber extends WebSubSubscriber {
     private static final Logger logger = LoggerFactory.getLogger(WebSubTriggerSubscriber.class);
@@ -45,16 +36,21 @@ class WebSubTriggerSubscriber extends WebSubSubscriber {
         }
 
         val result2 = result.get();
-
+        val headers = JavaxServlet.getRequestHeaders(request);
+        val params = JavaxServlet.getRequestParams(request);
+        String body;
         try {
-            logger.info("Triggering {}", result2.job.getFullName());
-            result2.getTrigger().trigger(
-                    result2.getSubscription(), getHeaders(request), getParams(request), getBody(request));
+            body = JavaxServlet.getRequestBody(request);
         } catch (IOException e) {
             logger.error(
                     "Error reading content from request {} (topic {}) for job {}: {}",
                     subscription.getId(), result2.getSubscription().getTopicUrl(), result2.getJob().getFullName(), e);
+            return;
         }
+
+        logger.info("Triggering {}", result2.job.getFullName());
+        result2.getTrigger().trigger(
+                result2.getSubscription(), headers, params, body);
     }
 
     @Value
@@ -64,6 +60,11 @@ class WebSubTriggerSubscriber extends WebSubSubscriber {
         WebSubTriggerSubscription subscription;
     }
 
+    /**
+     * Given a subscription, find the corresponding Jenkins job.
+     * @param subscriptionId
+     * @return
+     */
     private Optional<SearchResult> getJob(final String subscriptionId) {
         Jenkins j = Jenkins.getInstance();
         for(val job : j.getAllItems(ParameterizedJob.class)) {
@@ -76,35 +77,14 @@ class WebSubTriggerSubscriber extends WebSubSubscriber {
         return Optional.empty();
     }
 
-    private ImmutableMultimap<String, String> getHeaders(final HttpServletRequest request) {
-        final ImmutableMultimap.Builder<String, String> builder = ImmutableMultimap.builder();
-        toStream(request.getHeaderNames())
-                .forEach(k -> builder.putAll(k, Collections.list(request.getHeaders(k))));
-        return builder.build();
-    }
-
-    private ImmutableMultimap<String, String> getParams(final HttpServletRequest request) {
-        ImmutableMultimap.Builder<String, String> builder = ImmutableMultimap.builder();
-        Map<String, List<String>> data = new HashMap<>();
-        UrlEncodedParser.parse(request.getQueryString(), data);
-        data.forEach(builder::putAll);
-        return builder.build();
-    }
-
-    private String getBody(final HttpServletRequest request) throws IOException {
-        // TODO: Enforce limits on payload size.
-        BufferedReader reader = request.getReader();
-        return IOUtils.toString(reader);
-    }
-
     @Override
     protected void handleSubscriptionSuccess(final WebSubSubscription subscription) {
         super.handleSubscriptionSuccess(subscription);
-        // Optionally reflect status on job page.
+        // TODO: Optionally reflect status on job page.
     }
 
     @Override
     protected void handleSubscriptionRejection(final WebSubSubscription subscription) {
-
+        // TODO: Reflect status on job page.
     }
 }

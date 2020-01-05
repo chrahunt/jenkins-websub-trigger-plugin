@@ -18,14 +18,17 @@ import static com.googlecode.cqengine.query.QueryFactory.*;
  * Container for persisted subscriptions.
  */
 public class WebSubSubscriptionRegistry {
+    // Namespace for attributes.
     static private class SubscriptionAttributes {
         public static final Attribute<WebSubSubscription, String> ID =
                 attribute("id", WebSubSubscription::getId);
         public static final Attribute<WebSubSubscription, Instant> EXPIRATION =
                 attribute("expiration", WebSubSubscription::getExpiration);
     }
-    private final IndexedCollection<WebSubSubscription> subscriptions = new ConcurrentIndexedCollection<>();
 
+    final private IndexedCollection<WebSubSubscription> subscriptions = new ConcurrentIndexedCollection<>();
+
+    final private static int wowwhatalonglinethisisreallyalonglinethatIamwritingrightnowIwonderifthecheckstylepluginwilldoanythingaboutthisbecauseofhowlongitisandbecauseitsgoingoverthemaxlengthp = 1;
     public WebSubSubscriptionRegistry() {
         subscriptions.addIndex(UniqueIndex.onAttribute(SubscriptionAttributes.ID));
         subscriptions.addIndex(NavigableIndex.onAttribute(SubscriptionAttributes.EXPIRATION));

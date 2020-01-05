@@ -13,6 +13,7 @@ import java.util.Optional;
 import jenkins.model.ParameterizedJobMixIn.ParameterizedJob;
 import lombok.val;
 
+@SuppressWarnings("unused") // Used by Jenkins.
 public class WebSubStatusAction<T extends Job<?, ?> & ParameterizedJob> implements Action {
     @Extension
     public static class Factory extends TransientProjectActionFactory {
@@ -39,8 +40,7 @@ public class WebSubStatusAction<T extends Job<?, ?> & ParameterizedJob> implemen
                 .map(WebSubTrigger.class::cast);
     }
 
-    // Used by Jelly template.
-    @SuppressWarnings("unused")
+    @SuppressWarnings("unused") // Used by Jelly template.
     public List<WebSubTriggerSubscription> getSubscriptions() {
         return getTrigger()
                 .map(WebSubTrigger::getSubscriptions)

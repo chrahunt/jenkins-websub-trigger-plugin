@@ -16,7 +16,7 @@ import javax.servlet.ServletContext;
 import java.net.URL;
 import java.util.function.Function;
 
-import static io.jenkins.plugins.websub.WebSubUtils.fmt;
+import static io.jenkins.plugins.websub.utils.Generic.fmt;
 
 /**
  * Brings up Jetty server to be used as endpoint for test cases requiring a server.

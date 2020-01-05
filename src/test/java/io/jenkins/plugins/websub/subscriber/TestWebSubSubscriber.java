@@ -1,7 +1,5 @@
 package io.jenkins.plugins.websub.subscriber;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
@@ -13,7 +11,8 @@ import com.google.api.client.testing.http.MockHttpTransport;
 import com.google.api.client.testing.http.MockLowLevelHttpRequest;
 import com.google.api.client.testing.http.MockLowLevelHttpResponse;
 import io.jenkins.plugins.websub.test.StaplerServer;
-import io.jenkins.plugins.websub.WebSubUtils.ClosureVal;
+import io.jenkins.plugins.websub.utils.Generic.ClosureVal;
+import io.jenkins.plugins.websub.utils.GoogleApiClient;
 import lombok.val;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -31,21 +30,24 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
-import static io.jenkins.plugins.websub.WebSubUtils.fmt;
-import static io.jenkins.plugins.websub.WebSubUtils.getHttpResponseBody;
+import static io.jenkins.plugins.websub.utils.Generic.fmt;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(StaplerServer.Resolver.class)
 class TestWebSubSubscriber {
     private static Logger logger = LoggerFactory.getLogger(TestWebSubSubscriber.class);
 
+    // typedefs
     private interface MockHttpHandler
             extends BiConsumer<MockLowLevelHttpRequest, MockLowLevelHttpResponse> {}
 
     // Returns true if request was accepted and filled.
     private interface ConditionalHttpHandler
             extends BiFunction<MockLowLevelHttpRequest, MockLowLevelHttpResponse, Boolean> {}
-
+    /**
+     * Create test WebSubSubscriber with mocked transport.
+     */
     private static class ClientBuilder {
         private final Map<String, MockHttpHandler> urlCallbacks = new HashMap<>();
         private final List<ConditionalHttpHandler> handlers = new ArrayList<>();
@@ -150,9 +152,9 @@ class TestWebSubSubscriber {
     @Test
     @DisplayName("101: HTML Tag Discovery")
     void testHTMLTagDiscovery() throws Exception {
-        final String expectedHubUrl = "https://websub.rocks/blog/100/randomstring";
-        final String expectedTopicUrl = "https://websub.rocks/blog/100/topicrandomstring";
-        final String topicUrl = "https://websub.rocks/blog/100/topic";
+        val expectedHubUrl = "https://websub.rocks/blog/100/randomstring";
+        val expectedTopicUrl = "https://websub.rocks/blog/100/topicrandomstring";
+        val topicUrl = "https://websub.rocks/blog/100/topic";
         WebSubSubscriber client = ClientBuilder.from((req, rsp) ->
             rsp.setStatusCode(200)
                .setContentType("text/html")
@@ -172,10 +174,10 @@ class TestWebSubSubscriber {
     @Test
     @DisplayName("101.1: HTML Tag Discovery (relative)")
     void testHTMLTagDiscoveryRelative() throws Exception {
-        final String expectedHubUrl = "https://websub.rocks/blog/100/randomstring";
-        final String expectedTopicUrl = "https://websub.rocks/blog/100/topicrandomstring";
-        final String usedTopicUrl = "/blog/100/topicrandomstring";
-        final String topicUrl = "https://websub.rocks/blog/100/topic";
+        val expectedHubUrl = "https://websub.rocks/blog/100/randomstring";
+        val expectedTopicUrl = "https://websub.rocks/blog/100/topicrandomstring";
+        val usedTopicUrl = "/blog/100/topicrandomstring";
+        val topicUrl = "https://websub.rocks/blog/100/topic";
         WebSubSubscriber client = ClientBuilder.from((req, rsp) ->
             rsp.setStatusCode(200)
                .setContentType("text/html")
@@ -228,8 +230,7 @@ class TestWebSubSubscriber {
             this.subscriber = subscriber;
         }
 
-        // Used by Stapler.
-        @SuppressWarnings("unused")
+        @SuppressWarnings("unused") // Used by Stapler.
         public HttpResponse doCallback(final StaplerRequest request) {
             logger.debug("ServerHandlerProvider.doCallback()");
 
@@ -264,8 +265,8 @@ class TestWebSubSubscriber {
                         fmt("<{}>; rel=\"self\"", topicUrlReturned));
                 rsp.setStatusCode(200);
             })
+            // Hub subscription request.
             .handleUrl(hubUrl, (req, rsp) -> {
-                // Hub subscription request.
                 try {
                     // TODO: Actually extract and use the applicable callback URL.
                     callbackUrl.value = req.getContentAsString();
@@ -304,7 +305,7 @@ class TestWebSubSubscriber {
 
         assertEquals(200, response.getStatusCode(), fmt("Unexpected response {}", response));
         // Decode and verify challenge response.
-        String responseContent = getHttpResponseBody(response);
+        String responseContent = GoogleApiClient.getHttpResponseBody(response);
         assertEquals(hubChallenge, responseContent);
     }
 

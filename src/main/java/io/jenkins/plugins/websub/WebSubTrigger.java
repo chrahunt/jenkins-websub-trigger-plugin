@@ -18,14 +18,14 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-import static io.jenkins.plugins.websub.WebSubUtils.fmt;
-import static io.jenkins.plugins.websub.WebSubUtils.cast;
+import static io.jenkins.plugins.websub.utils.Generic.fmt;
+import static io.jenkins.plugins.websub.utils.Generic.cast;
 
 /**
  * A trigger associated with a Job that represents multiple subscriptions.
  */
 @ToString
-public class WebSubTrigger extends Trigger<Job<?, ?>> {
+final public class WebSubTrigger extends Trigger<Job<?, ?>> {
 
     @Symbol("WebSubTrigger")
     public static class WebSubDescriptor extends TriggerDescriptor {
@@ -39,6 +39,7 @@ public class WebSubTrigger extends Trigger<Job<?, ?>> {
         public String getDisplayName() { return "WebSub Trigger"; }
     }
 
+    // TODO: OK to have extension on trigger?
     @Extension
     public static final WebSubDescriptor DESCRIPTOR = new WebSubDescriptor();
 
@@ -46,7 +47,7 @@ public class WebSubTrigger extends Trigger<Job<?, ?>> {
     private final List<WebSubTriggerSubscription> subscriptions;
 
     @DataBoundConstructor
-    @SuppressWarnings("unused")
+    @SuppressWarnings("unused") // Used by Stapler.
     public WebSubTrigger(final List<WebSubTriggerSubscription> subscriptions) {
         this.subscriptions = subscriptions;
     }

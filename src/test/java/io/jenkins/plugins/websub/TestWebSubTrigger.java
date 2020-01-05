@@ -34,17 +34,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import io.jenkins.plugins.websub.test.JenkinsRule;
-import io.jenkins.plugins.websub.WebSubUtils.ClosureVal;
-import io.jenkins.plugins.websub.WebSubUtils.LockGuard;
+import io.jenkins.plugins.websub.utils.Generic.ClosureVal;
+import io.jenkins.plugins.websub.utils.Generic.LockGuard;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.jenkins.plugins.websub.WebSubUtils.fmt;
+import static io.jenkins.plugins.websub.utils.Generic.fmt;
 import static org.awaitility.Awaitility.await;
 
+/**
+ * Integration test with Jenkins instance.
+ *
+ * JenkinsRule
+ */
 @ExtendWith(JenkinsRule.Resolver.class)
 @ExtendWith(StaplerServer.Resolver.class)
 public class TestWebSubTrigger {
@@ -71,8 +76,7 @@ public class TestWebSubTrigger {
         @Getter @Setter String hubUrl;
         @Getter @Setter String topicUrl;
 
-        // Used by Stapler.
-        @SuppressWarnings("unused")
+        @SuppressWarnings("unused") // Used by Stapler.
         public HttpResponse doGettopic(final StaplerRequest request) {
             logger.info("Received topic request");
             return HttpResponses.html(String.join(
@@ -91,8 +95,7 @@ public class TestWebSubTrigger {
             String callbackUrl;
         }
 
-        // Used by Stapler.
-        @SuppressWarnings("unused")
+        @SuppressWarnings("unused") // Used by Stapler.
         public HttpResponse doSubscribe(final StaplerRequest request) {
             // Use http client to call back to client, check that expected challenge is returned.
             final String mode = request.getParameter("hub.mode");

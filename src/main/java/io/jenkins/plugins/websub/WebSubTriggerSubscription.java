@@ -19,19 +19,28 @@ import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Data object representing an individual subscription saved to a Job.
+ *
+ * A subscription contains:
+ * - topicUrl - the URL to retrieve for discovery
+ *
+ * // TODO
+ * - basicAuthCredential - if provided, the credential to use for basic authentication to
+ *   the topicUrl and subscription endpoints
+ * - headers - list of headers to send in requests to the topicUrl and subscription endpoints
+ * - params
+ * - cert
  */
 @ToString
 public class WebSubTriggerSubscription
         extends AbstractDescribableImpl<WebSubTriggerSubscription> {
-    @Extension public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
+    @Extension
+    @SuppressWarnings("unused") // Used by Jenkins.
     public static class DescriptorImpl extends Descriptor<WebSubTriggerSubscription> {
         @Nonnull
         @Override
         public String getDisplayName() { return ""; }
 
-        // Used by form validator.
-        @SuppressWarnings("unused")
+        @SuppressWarnings("unused") // Used by form validator.
         public FormValidation doCheckTopicUrl(@QueryParameter String value) {
             final String[] validSchemes = {"http", "https"};
             final long options = UrlValidator.ALLOW_LOCAL_URLS + UrlValidator.NO_FRAGMENTS;
